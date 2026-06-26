@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DVARY Chat (Single File)</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:Segoe UI,sans-serif; }
+        body { height:100vh; overflow:hidden; display:flex; justify-content:center; align-items:center; background:#000; color:#fff; }
+        
+        /* LOGIN SCREEN */
+        #loginScreen { position:fixed; width:100%; height:100%; z-index:100; background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('https://res.cloudinary.com/dvbftux6w/image/upload/v1782497850/xbbsnfjqbvlq39m7rd4i.jpg'); background-size:cover; background-position:center; display:flex; justify-content:center; align-items:center; flex-direction:column;}
+        .login-card { background: rgba(0,0,0,0.75); backdrop-filter:blur(10px); padding:30px; border-radius:30px; width:90%; max-width:400px; border:1px solid #00ffcc; text-align:center; }
+        .login-card h1 { color:#00ffcc; font-size:32px; margin-bottom:10px; }
+        .login-card p { color:#aaa; margin-bottom:20px; }
+        .tabs { display:flex; gap:10px; margin-bottom:20px; background:rgba(255,255,255,0.05); border-radius:15px; padding:5px;}
+        .tab-btn { flex:1; padding:10px; border:none; background:transparent; color:#888; border-radius:12px; cursor:pointer; font-weight:bold; }
+        .tab-btn.active { background:#00ffcc; color:#000; }
+        .form-group { margin-bottom:15px; text-align:left; }
+        .form-group label { display:block; font-size:13px; color:#ccc; margin-bottom:5px; }
+        .form-group input { width:100%; padding:12px; border:none; border-radius:12px; background:rgba(255,255,255,0.1); color:#fff; outline:none; }
+        .btn-primary { width:100%; padding:12px; border:none; border-radius:12px; background:#00ffcc; color:#000; font-weight:bold; cursor:pointer; margin-top:10px;}
+        .btn-google { width:100%; padding:12px; border:1px solid #444; border-radius:12px; background:transparent; color:#fff; cursor:pointer; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:10px;}
+        
+        /* CHAT SCREEN */
+        #appContent { display:none; width:100%; height:100vh; flex-direction:column; background:#050505; }
+        .header { display:flex; justify-content:space-between; align-items:center; padding:15px; background:#0f0f0f; border-bottom:1px solid #00ffcc;}
+        .header h2 { color:#00ffcc; font-size:18px;}
+        .logout-btn { padding:8px 15px; border:none; border-radius:8px; background:#dc3545; color:#fff; cursor:pointer;}
+        #chatMessages { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:10px;}
+        .bubble { max-width:75%; padding:10px 15px; border-radius:15px; font-size:15px; position:relative; animation:fadeIn 0.3s;}
+        @keyframes fadeIn { from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);} }
+        .bubble.mine { align-self:flex-end; background:#00ffcc; color:#000; border-bottom-right-radius:2px; }
+        .bubble.theirs { align-self:flex-start; background:#2d2d2d; border-bottom-left-radius:2px; }
+        .bubble .meta { font-size:10px; margin-top:5px; opacity:0.6; display:flex; align-items:center; gap:5px;}
+        .bubble .avatar { width:24px; height:24px; border-radius:50%; background:#555; object-fit:cover;}
+        
+        /* INPUT BAR */
+        .input-area { display:flex; gap:10px; padding:15px; background:#0f0f0f; border-top:1px solid #222;}
+        .input-area input { flex:1; padding:12px 15px; border:none; border-radius:25px; background:#222; color:#fff; outline:none;}
+        .input-area button { padding:12px 20px; border:none; border-radius:25px; background:#00ffcc; color:#000; font-weight:bold; cursor:pointer;}
+    </style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+    <div class="login-card">
+        <h1>✈️ DVARY</h1>
+        <p>Sign in to start chatting</p>
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+            <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+        </div>
+        <div id="loginForm">
+            <div class="form-group"><label>Email</label><input type="email" id="logEmail" placeholder="email@example.com"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="logPass" placeholder="******"></div>
+            <button class="btn-primary" onclick="handleLogin()">Sign In</button>
+        </div>
+        <div id="signupForm" style="display:none;">
+            <div class="form-group"><label>Full Name</label><input type="text" id="sigName" placeholder="John Doe"></div>
+            <div class="form-group"><label>Email</label><input type="email" id="sigEmail" placeholder="email@example.com"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="sigPass" placeholder="******"></div>
+            <button class="btn-primary" onclick="handleSignup()">Create Account</button>
+        </div>
+        <button class="btn-google" onclick="googleLogin()">
+            <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Continue with Google
+        </button>
+    </div>
+</div>
+
+<!-- CHAT SCREEN -->
+<div id="appContent">
+    <div class="header">
+        <h2>💬 DVARY Chat</h2>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    <div id="chatMessages"></div>
+    <div class="input-area">
+        <input type="text" id="msgInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyDpFyANpjv2dMUvXoMSSmqoT3s1UwJLUkg",
+        authDomain: "dvary-9a7d0.firebaseapp.com",
+        projectId: "dvary-9a7d0",
+        storageBucket: "dvary-9a7d0.firebasestorage.app",
+        messagingSenderId: "107370806066",
+        appId: "1:107370806066:android:e954fb03d99e52ac09f52b"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    let unsubscribe = null;
+
+    // UI Helpers
+    function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        if(tab==='login'){ document.getElementById('loginForm').style.display='block'; document.getElementById('signupForm').style.display='none'; document.querySelector('[onclick="switchTab(\'login\')"]').classList.add('active');}
+        else { document.getElementById('loginForm').style.display='none'; document.getElementById('signupForm').style.display='block'; document.querySelector('[onclick="switchTab(\'signup\')"]').classList.add('active');}
+    }
+
+    function showMsg(msg, type) { alert(msg); }
+
+    // Auth
+    function handleLogin() {
+        const e = document.getElementById('logEmail').value, p = document.getElementById('logPass').value;
+        if(!e||!p) return showMsg('Fill both fields');
+        auth.signInWithEmailAndPassword(e, p).catch(err => showMsg(err.message));
+    }
+    function handleSignup() {
+        const n = document.getElementById('sigName').value, e = document.getElementById('sigEmail').value, p = document.getElementById('sigPass').value;
+        if(!n||!e||!p) return showMsg('Fill all fields');
+        auth.createUserWithEmailAndPassword(e, p).then(res => res.user.updateProfile({ displayName: n, photoURL: `https://ui-avatars.com/api/?name=${n}&background=00ffcc&color=000` })).catch(err => showMsg(err.message));
+    }
+    function googleLogin() {
+        auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err => showMsg(err.message));
+    }
+    function logout() {
+        if(unsubscribe) unsubscribe();
+        auth.signOut();
+    }
+
+    // Chat Logic
+    function sendMessage() {
+        const input = document.getElementById('msgInput');
+        const txt = input.value.trim();
+        if(!txt) return;
+        const user = auth.currentUser;
+        db.collection('messages').add({
+            text: txt, uid: user.uid, name: user.displayName || 'User', 
+            photo: user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName||'U'}&background=00ffcc&color=000`,
+            time: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        input.value = '';
+    }
+
+    // Listener (StreamBuilder kwa HTML)
+    auth.onAuthStateChanged(user => {
+        if(user) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContent').style.display = 'flex';
+            if(unsubscribe) unsubscribe(); // prevent duplicate listeners
+            
+            unsubscribe = db.collection('messages').orderBy('time', 'asc').onSnapshot(snap => {
+                const container = document.getElementById('chatMessages');
+                container.innerHTML = '';
+                snap.forEach(doc => {
+                    const m = doc.data();
+                    const isMe = m.uid === user.uid;
+                    const div = document.createElement('div');
+                    div.className = `bubble ${isMe ? 'mine' : 'theirs'}`;
+                    div.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+                            <img src="${m.photo}" class="avatar" onerror="this.src='https://ui-avatars.com/api/?name=U'">
+                            <span style="font-weight:bold;font-size:12px;">${isMe ? 'You' : m.name}</span>
+                        </div>
+                        <div>${m.text}</div>
+                    `;
+                    container.appendChild(div);
+                });
+                container.scrollTop = container.scrollHeight;
+            });
+        } else {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('appContent').style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>
