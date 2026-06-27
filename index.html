@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Lion</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Lion roaring image from online */
+            background-image: url('https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+
+        /* Dark overlay so text is readable */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: 0;
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 1;
+            background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 45px 35px;
+            border-radius: 30px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Header */
+        .logo-area {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-area i {
+            font-size: 50px;
+            color: #f1c40f;
+            background: rgba(241, 196, 15, 0.15);
+            padding: 15px;
+            border-radius: 50%;
+            border: 2px solid #f1c40f;
+            margin-bottom: 10px;
+        }
+
+        .logo-area h1 {
+            color: #fff;
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: 2px;
+        }
+
+        .logo-area h1 span {
+            color: #f1c40f;
+        }
+
+        .logo-area p {
+            color: #aaa;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* Input fields */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            color: #ddd;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 50px;
+            border: none;
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            font-size: 15px;
+            outline: 2px solid transparent;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-group input::placeholder {
+            color: #888;
+        }
+
+        .input-group input:focus {
+            outline: 2px solid #f1c40f;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #f1c40f;
+        }
+
+        /* Main Login Button */
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: #1a1a1a;
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 8px 20px rgba(241, 196, 15, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 30px rgba(241, 196, 15, 0.5);
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .btn-login i {
+            margin-right: 8px;
+        }
+
+        /* Divider "Or" */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0 20px;
+            color: #888;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .divider::before { margin-right: 15px; }
+        .divider::after { margin-left: 15px; }
+
+        /* Social buttons - Google, GitHub, Facebook (arranged neatly) */
+        .social-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+        }
+
+        .social-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 0;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .social-btn i {
+            font-size: 18px;
+        }
+
+        /* Colors on hover */
+        .social-btn.google:hover {
+            background: #db4437;
+            border-color: #db4437;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(219, 68, 55, 0.4);
+        }
+
+        .social-btn.github:hover {
+            background: #333;
+            border-color: #666;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(51, 51, 51, 0.5);
+        }
+
+        .social-btn.facebook:hover {
+            background: #1877f2;
+            border-color: #1877f2;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(24, 119, 242, 0.4);
+        }
+
+        /* Footer text */
+        .footer-text {
+            text-align: center;
+            margin-top: 25px;
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .footer-text a {
+            color: #f1c40f;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .footer-text a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
+        /* Responsive for mobile */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 30px 20px;
+                margin: 0 15px;
+                border-radius: 20px;
+            }
+
+            .social-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .social-btn {
+                padding: 14px 0;
+                justify-content: center;
+            }
+
+            .logo-area h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <!-- Top section: Lion Icon -->
+        <div class="logo-area">
+            <i class="fas fa-crown"></i>
+            <h1>SIMBA<span>HUB</span></h1>
+            <p>Welcome to your realm of power</p>
+        </div>
+
+        <!-- Login Form -->
+        <form>
+            <div class="input-group">
+                <label><i class="fas fa-envelope" style="margin-right: 8px; color: #f1c40f;"></i>Email</label>
+                <input type="email" placeholder="example@email.com" required>
+            </div>
+            <div class="input-group">
+                <label><i class="fas fa-lock" style="margin-right: 8px; color: #f1c40f;"></i>Password</label>
+                <input type="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-login">
+                <i class="fas fa-arrow-right-to-bracket"></i> LOGIN
+            </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="divider">Or sign in with</div>
+
+        <!-- Social buttons (Google, GitHub, Facebook) - neatly arranged -->
+        <div class="social-buttons">
+            <button class="social-btn google" onclick="alert('Signing in with Google...')">
+                <i class="fab fa-google"></i> <span>Google</span>
+            </button>
+            <button class="social-btn github" onclick="alert('Signing in with GitHub...')">
+                <i class="fab fa-github"></i> <span>GitHub</span>
+            </button>
+            <button class="social-btn facebook" onclick="alert('Signing in with Facebook...')">
+                <i class="fab fa-facebook-f"></i> <span>Facebook</span>
+            </button>
+        </div>
+
+        <!-- Sign up link -->
+        <div class="footer-text">
+            Don't have an account? <a href="#">Sign up here</a>
+        </div>
+    </div>
+</body>
+</html>
